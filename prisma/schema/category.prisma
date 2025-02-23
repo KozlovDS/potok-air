@@ -1,0 +1,15 @@
+model Category {
+  id        Int     @id @default(autoincrement())
+  name      String @unique
+  
+  subcategory SubCategory[]
+}
+
+model SubCategory {
+  id        Int     @id @default(autoincrement())
+  name      String
+  link      String
+  category  Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  products  Products[]
+}

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/shared/header";
+import { Footer, Header } from "@/components/shared";
 import { cn } from "@/lib/utils";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["cyrillic"],
-  weight: ["500", "600"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -22,9 +22,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={cn("antialiased bg-background font-semibold", montserrat.variable)}>
+      <body
+        className={cn(
+          "antialiased bg-background font-semibold flex flex-col min-h-screen",
+          montserrat.variable
+        )}
+      >
         <Header />
-        <main>{children}</main>
+        <main className="px-4 flex-auto" id="main">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

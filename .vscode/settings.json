@@ -1,3 +1,13 @@
 {
-  "cSpell.words": ["nprogress"]
+  "cSpell.words": [
+    "Видеообзор",
+    "Мультисплит",
+    "Потокэир",
+    "Чиллеры",
+    "autoincrement",
+    "headlessui",
+    "nprogress",
+    "preloaders"
+  ],
+  "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

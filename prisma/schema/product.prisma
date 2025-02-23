@@ -1,0 +1,89 @@
+model Products {
+  id              Int     @id @default(autoincrement())
+  name            String
+  imageUrl        String
+  description     String
+  videoLink       String?
+
+  subcategory     SubCategory @relation(fields: [subCategoryId], references: [id])
+  subCategoryId   Int
+
+  images                ProductImages[]
+  models                ProductModels[]
+  documents             ProductDocuments[]
+  advantages            ProductAdvantages[]
+  specification         ProductSpecification[]
+  functions             ProductFunctions[]
+}
+
+model ProductImages {
+  id        Int     @id @default(autoincrement())
+  imageUrl  String
+
+  product   Products @relation(fields: [productId], references: [id])
+  productId Int
+}
+
+model ProductModels {
+  id              Int     @id @default(autoincrement())
+  name            String
+  price           Int
+
+  characteristics ProductCharacteristics[]
+
+  product         Products @relation(fields: [productId], references: [id])
+  productId       Int
+}
+
+model ProductCharacteristics {
+  id              Int     @id @default(autoincrement())
+  name            String
+  value           String
+
+  productModelId  Int
+  productModel    ProductModels @relation(fields: [productModelId], references: [id])
+}
+
+model ProductDocuments {
+  id        Int     @id @default(autoincrement())
+  name      String
+  url       String
+
+  productId  Int
+  product    Products @relation(fields: [productId], references: [id])
+}
+
+model ProductAdvantages {
+  id            Int     @id @default(autoincrement())
+  name          String
+  imageUrl      String
+  description   String
+
+  product       Products @relation(fields: [productId], references: [id])
+  productId     Int
+}
+model ProductFunctions {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+
+  category ProductFunctionsCategory @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  products    Products[]
+}
+
+model ProductFunctionsCategory {
+  id          Int     @id @default(autoincrement())
+  name        String
+  
+  functions ProductFunctions[]
+}
+
+model ProductSpecification {
+  id        Int     @id @default(autoincrement())
+  name      String
+  imageUrl  String
+
+  product   Products[]
+}
