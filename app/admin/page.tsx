@@ -1,6 +1,6 @@
 "use client";
 
-import ProductAddForm from "@/components/shared/admin/product-add-form";
+import AddProductPage from "@/components/shared/admin/add-product-page";
 import { Container } from "@/components/ui";
 import { LogOut, ShoppingBasket } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ export default function AdminPage() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <Container className="flex">
+    <Container className="flex gap-10">
       <div className="flex flex-col w-96 h-auto">
         <div className="space-y-3 sticky top-4 rounded-md p-3 bg-white">
           <div className="flex-1">
@@ -52,8 +52,8 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-      <div className="container mx-auto p-12">
-        <ProductAddForm />
+      <div className="container mx-auto">
+        <AddProductPage />
       </div>
     </Container>
   );

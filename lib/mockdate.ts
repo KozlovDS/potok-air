@@ -7,7 +7,6 @@ import {
   ProductSpecification,
   ProductAdvantages,
   ProductFunctions,
-  ProductFunctionsCategory,
 } from "@prisma/client";
 
 export const MENU_LIST = [
@@ -519,29 +518,15 @@ export const functionsItem: ProductFunctions[] = [
     name: "Радар",
     description:
       "Интеллектуальное управление системой осуществляется с помощью радиолокационной системы. Радар может обнаруживать действия людей в помещении. В режиме охлаждения и обогрева, когда вы отсутствуете в течение 30 минут, устройство автоматически понижает производительность для экономии энергии.",
-    categoryId: 1,
   },
   {
     id: 2,
     name: "Функция 2",
     description: "Описание функции 2",
-    categoryId: 1,
   },
   {
     id: 3,
     name: "Функция 3",
     description: "Описание функции 3",
-    categoryId: 2,
-  },
-];
-
-export const functionsCategory: ProductFunctionsCategory[] = [
-  {
-    id: 1,
-    name: "Здоровье и комфорт",
-  },
-  {
-    id: 2,
-    name: "Функциональность",
   },
 ];

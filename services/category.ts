@@ -6,6 +6,8 @@ interface CategoryWithSubCategories extends Category {
 }
 
 export const getAllWithSubCategories = async () => {
-  const { data } = await axiosInstance.get<CategoryWithSubCategories[]>("/category-with-subcategories");
+  const { data } = await axiosInstance.get<CategoryWithSubCategories[]>(
+    "category/category-with-subcategories"
+  );
   return data;
 };

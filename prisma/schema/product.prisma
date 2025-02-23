@@ -66,18 +66,7 @@ model ProductFunctions {
   id          Int     @id @default(autoincrement())
   name        String
   description String
-
-  category ProductFunctionsCategory @relation(fields: [categoryId], references: [id])
-  categoryId Int
-
   products    Products[]
-}
-
-model ProductFunctionsCategory {
-  id          Int     @id @default(autoincrement())
-  name        String
-  
-  functions ProductFunctions[]
 }
 
 model ProductSpecification {

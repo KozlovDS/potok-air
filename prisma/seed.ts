@@ -8,7 +8,6 @@ import {
   productSpecifications,
   productAdvantages,
   functionsItem,
-  functionsCategory,
 } from "../lib/mockdate";
 import { prisma } from "./prisma-client";
 
@@ -114,10 +113,6 @@ async function up() {
       },
     });
   }
-
-  await prisma.productFunctionsCategory.createMany({
-    data: functionsCategory,
-  });
 
   await prisma.productFunctions.createMany({
     data: functionsItem,

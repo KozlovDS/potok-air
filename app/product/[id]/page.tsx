@@ -5,7 +5,6 @@ import {
   ProductCharacteristics,
   ProductDocuments,
   ProductFunctions,
-  ProductFunctionsCategory,
   Products,
   ProductSpecification,
 } from "@prisma/client";
@@ -54,7 +53,6 @@ interface Product extends Products {
   documents: ProductDocuments[];
   advantages: ProductAdvantages[];
   functions: ProductFunctions[];
-  functionCategory: ProductFunctionsCategory[];
 }
 
 export default function ProductPage({
@@ -193,7 +191,6 @@ export default function ProductPage({
               <Functions
                 productName={product.name}
                 functions={product.functions}
-                categoryFunctions={product.functionCategory}
               />
             </TabsContent>
           </Tabs>
