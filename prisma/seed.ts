@@ -21,7 +21,6 @@ async function up() {
         subcategory: {
           create: item.subCategories.map((subCategory) => ({
             name: subCategory.name,
-            link: subCategory.link,
           })),
         },
       },
@@ -41,7 +40,6 @@ async function up() {
     await prisma.products.create({
       data: {
         name: product.name,
-        imageUrl: product.imageUrl,
         description: product.description,
         videoLink: product.videoLink,
         subcategory: {
@@ -132,7 +130,6 @@ async function down() {
   await prisma.$executeRaw`TRUNCATE TABLE "Category" RESTART IDENTITY CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "SubCategory" RESTART IDENTITY CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "Products" RESTART IDENTITY CASCADE`;
-  await prisma.$executeRaw`TRUNCATE TABLE "ProductFunctionsCategory" RESTART IDENTITY CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "ProductFunctions" RESTART IDENTITY CASCADE`;
 }
 

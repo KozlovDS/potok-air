@@ -13,74 +13,33 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, ImageUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AddCharacteristic } from "./add-characteristic";
+import { toast } from "sonner";
+import {
+  Product,
+  ProductFunctions,
+  Specification,
+  SubCategory,
+} from "@/lib/types";
+import { AddCategory } from "./add-category";
+import Image from "next/image";
+import { AddFunction } from "./add-function";
+import { AddSpecification } from "./add-specification";
 
-interface ProductFunctions {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface SubCategory {
-  id: number;
-  name: string;
-}
-
-interface Images {
-  imageUrl: string;
-}
-
-interface Characteristic {
-  name: string;
-  value: string;
-}
-
-interface Models {
-  name: string;
-  price: string;
-  characteristics: Characteristic[];
-}
-
-interface Advantages {
-  name: string;
-  imageUrl: string;
-  description: string;
-}
-
-interface Documents {
-  name: string;
-  url: string;
-}
-
-interface Specification {
-  id: number;
-  name: string;
-}
-
-interface Product {
-  name: string;
-  imageUrl: string;
-  description: string;
-  videoLink: string;
-  subCategoryId: number | null;
-  images: Images[];
-  models: Models[];
-  advantages: Advantages[];
-  documents: Documents[];
-  functions: number[];
-  specifications: number[];
-}
 export default function AddProductPage() {
+  // Состояние формы
   const [formData, setFormData] = useState<Product>({
+    id: 0,
     name: "",
-    imageUrl: "",
     description: "",
     videoLink: "",
     subCategoryId: null,
-    images: [{ imageUrl: "" }],
+    slider: false,
+    images: [], // Массив объектов { url, alt }
     models: [
       {
         name: "",
@@ -88,24 +47,63 @@ export default function AddProductPage() {
         characteristics: [{ name: "", value: "" }],
       },
     ],
-    advantages: [{ name: "", imageUrl: "", description: "" }],
-    documents: [{ name: "", url: "" }],
+    advantages: [{ name: "", imageUrl: "", description: "" }], // Ensure advantages is always an array
+    documents: [],
     functions: [],
     specifications: [],
   });
 
+  // Состояние для превью изображений
+  const [imagePreviews, setImagePreviews] = useState<
+    { previewUrl: string; fileName: string }[]
+  >([]);
+
+  // Дополнительные состояния
+  const [openAddCharacteristic, setOpenAddCharacteristic] = useState(false);
+  const [openAddFunction, setOpenAddFunction] = useState(false);
+  const [openAddSpecification, setOpenAddSpecification] = useState(false);
+  const [openAddCategory, setOpenAddCategory] = useState(false);
   const [subCategory, setSubCategory] = useState<SubCategory[]>([]);
   const [openSubCategory, setOpenSubCategory] = useState(false);
-
   const [functions, setFunctions] = useState<ProductFunctions[]>([]);
   const [specificationsList, setSpecificationsList] = useState<Specification[]>(
     []
   );
-
+  const [advantageImagePreviews, setAdvantageImagePreviews] = useState<
+    { previewUrl: string; fileName: string }[]
+  >([]);
   const [characteristics, setCharacteristics] = useState<string[]>([]);
   const [comboboxOpen, setComboboxOpen] = useState<{ [key: string]: boolean }>(
     {}
   );
+
+  // Загрузка данных при монтировании компонента
+  useEffect(() => {
+    async function fetchFunctions() {
+      const response = await fetch("/api/product/functions");
+      const data = await response.json();
+      setFunctions(data);
+    }
+    fetchFunctions();
+  }, [openAddFunction]);
+
+  useEffect(() => {
+    async function fetchSubCategory() {
+      const response = await fetch("/api/category/subcategory");
+      const data = await response.json();
+      setSubCategory(data);
+    }
+    fetchSubCategory();
+  }, [openAddCategory]);
+
+  useEffect(() => {
+    async function fetchSpecifications() {
+      const response = await fetch("/api/product/specification");
+      const data = await response.json();
+      setSpecificationsList(data);
+    }
+    fetchSpecifications();
+  }, [openAddSpecification]);
 
   useEffect(() => {
     async function fetchCharacteristics() {
@@ -113,27 +111,10 @@ export default function AddProductPage() {
       const data = await response.json();
       setCharacteristics(data.map((char: { name: string }) => char.name));
     }
-    async function fetchSubCategory() {
-      const response = await fetch("/api/category/subcategory");
-      const data = await response.json();
-      setSubCategory(data);
-    }
-    async function fetchFunctions() {
-      const response = await fetch("/api/product/functions");
-      const data = await response.json();
-      setFunctions(data);
-    }
-    async function fetchSpecifications() {
-      const response = await fetch("/api/product/specification");
-      const data = await response.json();
-      setSpecificationsList(data);
-    }
-    fetchSpecifications();
-    fetchFunctions();
-    fetchSubCategory();
     fetchCharacteristics();
   }, []);
 
+  // Обработчик изменения полей ввода
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -143,6 +124,7 @@ export default function AddProductPage() {
     });
   };
 
+  // Обработчик изменения массивов
   const handleArrayChange = (
     arrayName: keyof Product,
     index: number,
@@ -154,7 +136,7 @@ export default function AddProductPage() {
       : [];
     if (arrayName === "models" && field.includes("characteristics")) {
       const [charIndex] = field.match(/\d+/) || [];
-      const updatedModels = [...formData.models];
+      const updatedModels = [...(formData.models || [])];
       updatedModels[index].characteristics[parseInt(charIndex || "0")].value =
         value;
       setFormData({ ...formData, models: updatedModels });
@@ -164,14 +146,156 @@ export default function AddProductPage() {
     }
   };
 
+  // Обработчик загрузки изображений
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    // Создаем временные URL для превью
+    const newPreviews = files.map((file) => ({
+      previewUrl: URL.createObjectURL(file),
+      fileName: file.name,
+    }));
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
+
+    // Загружаем файлы на сервер
+    const uploadedImages = await Promise.all(
+      files.map(async (file) => {
+        const uploadData = new FormData();
+        uploadData.append("image", file);
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          body: uploadData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          return { imageUrl: data.imageUrl };
+        }
+        throw new Error(data.error);
+      })
+    );
+
+    // Обновляем formData.images с реальными URL-ами
+    setFormData((prev) => ({
+      ...prev,
+      images: [
+        ...prev.images,
+        ...uploadedImages.map((img) => ({
+          imageUrl: img.imageUrl,
+        })),
+      ],
+    }));
+  };
+
+  // Обработчик удаления изображения
+  const handleRemoveImage = async (index: number) => {
+    const imageToDelete = formData.images[index]; // Получаем данные об изображении
+
+    try {
+      // Отправляем запрос на сервер для удаления файла
+      const response = await fetch("/api/delete-image", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl: imageToDelete.imageUrl }),
+      });
+
+      if (response.ok) {
+        // Удаляем изображение из состояния приложения
+        setFormData((prev) => ({
+          ...prev,
+          images: prev.images.filter((_, i) => i !== index),
+        }));
+        setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+      } else {
+        console.error("Ошибка при удалении изображения");
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+    }
+  };
+
+  // Обработчик загрузки изображения для преимущества
+  const handleAdvantageImageChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    advantageIndex: number
+  ) => {
+    const files = Array.from(e.target.files || []).slice(0, 1); // Берем только первое изображение
+    if (files.length === 0) return;
+
+    // Создаем превью только для преимуществ
+    const newPreviews = files.map((file) => ({
+      previewUrl: URL.createObjectURL(file),
+      fileName: file.name,
+    }));
+    setAdvantageImagePreviews((prev) => [...prev, ...newPreviews]);
+
+    // Загружаем файл на сервер
+    const uploadedImages = await Promise.all(
+      files.map(async (file) => {
+        const uploadData = new FormData();
+        uploadData.append("image", file);
+        const res = await fetch("/api/upload-image", {
+          method: "POST",
+          body: uploadData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          return { imageUrl: data.imageUrl };
+        }
+        throw new Error(data.error);
+      })
+    );
+
+    // Обновляем только конкретное преимущество
+    const updatedAdvantages = [...(formData.advantages || [])];
+    updatedAdvantages[advantageIndex].imageUrl = uploadedImages[0].imageUrl;
+    setFormData({ ...formData, advantages: updatedAdvantages });
+
+    // Обновляем previewUrl на реальный URL после загрузки
+    setAdvantageImagePreviews((prev) =>
+      prev.map((preview) =>
+        preview.previewUrl === newPreviews[0].previewUrl
+          ? { ...preview, previewUrl: uploadedImages[0].imageUrl }
+          : preview
+      )
+    );
+  };
+
+  // Обработчик удаления изображения преимущества
+  const handleRemoveAdvantageImage = async (index: number) => {
+    const imageToDelete = formData.advantages?.[index]?.imageUrl;
+
+    try {
+      const response = await fetch("/api/delete-image", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl: imageToDelete }),
+      });
+
+      if (response.ok) {
+        const updatedAdvantages = [...(formData.advantages || [])];
+        updatedAdvantages[index].imageUrl = "";
+        setFormData({ ...formData, advantages: updatedAdvantages });
+        setAdvantageImagePreviews((prev) =>
+          prev.filter((preview) => preview.previewUrl !== imageToDelete)
+        );
+      } else {
+        console.error("Ошибка при удалении изображения");
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+    }
+  };
+
+  // Добавление нового элемента в массив
   const handleAddField = (arrayName: keyof Product) => {
     const updatedArray = Array.isArray(formData[arrayName])
       ? [...formData[arrayName]]
       : [];
-
-    if (arrayName === "images") {
-      updatedArray.push({ imageUrl: "" });
-    } else if (arrayName === "models") {
+    if (arrayName === "models") {
       updatedArray.push({
         name: "",
         price: "",
@@ -181,16 +305,13 @@ export default function AddProductPage() {
       updatedArray.push({ name: "", imageUrl: "", description: "" });
     } else if (arrayName === "documents") {
       updatedArray.push({ name: "", url: "" });
-    } else if (arrayName === "functions") {
-      return;
-    } else if (arrayName === "specifications") {
-      return;
     }
     setFormData({ ...formData, [arrayName]: updatedArray });
   };
 
+  // Добавление характеристики в модель
   const handleAddCharacteristic = (modelIndex: number) => {
-    const updatedModels = [...formData.models];
+    const updatedModels = [...(formData.models || [])];
     updatedModels[modelIndex].characteristics.push({
       name: "",
       value: "",
@@ -198,6 +319,7 @@ export default function AddProductPage() {
     setFormData({ ...formData, models: updatedModels });
   };
 
+  // Удаление элемента из массива
   const handleRemoveField = (arrayName: keyof Product, index: number) => {
     const updatedArray = Array.isArray(formData[arrayName])
       ? formData[arrayName].filter((_, i) => i !== index)
@@ -205,29 +327,32 @@ export default function AddProductPage() {
     setFormData({ ...formData, [arrayName]: updatedArray });
   };
 
+  // Удаление характеристики из модели
   const handleRemoveCharacteristic = (
     modelIndex: number,
     charIndex: number
   ) => {
-    const updatedModels = [...formData.models];
+    const updatedModels = [...(formData.models || [])];
     updatedModels[modelIndex].characteristics = updatedModels[
       modelIndex
     ].characteristics.filter((_, i) => i !== charIndex);
     setFormData({ ...formData, models: updatedModels });
   };
 
+  // Выбор характеристики
   const handleCharacteristicSelect = (
     modelIndex: number,
     charIndex: number,
     selectedName: string
   ) => {
-    const updatedModels = [...formData.models];
+    const updatedModels = [...(formData.models || [])];
     updatedModels[modelIndex].characteristics[charIndex].name = selectedName;
-    updatedModels[modelIndex].characteristics[charIndex].value = ""; // Сброс значения при выборе новой характеристики
+    updatedModels[modelIndex].characteristics[charIndex].value = "";
     setFormData({ ...formData, models: updatedModels });
     toggleCombobox(`models[${modelIndex}].characteristics[${charIndex}].name`);
   };
 
+  // Отправка формы
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(JSON.stringify(formData, null, 2));
@@ -238,19 +363,46 @@ export default function AddProductPage() {
       },
       body: JSON.stringify(formData),
     });
+
     if (response.ok) {
-      console.log("Товар добавлен успешно");
+      toast("Товар успешно добавлен.");
+
+      setFormData({
+        id: 0,
+        name: "",
+        description: "",
+        videoLink: "",
+        subCategoryId: null,
+        slider: false,
+        images: [],
+        models: [
+          {
+            name: "",
+            price: "",
+            characteristics: [{ name: "", value: "" }],
+          },
+        ],
+        advantages: [{ name: "", imageUrl: "", description: "" }],
+        documents: [{ name: "", url: "" }],
+        functions: [],
+        specifications: [],
+      });
+      setImagePreviews([]); // Очищаем превью изображений продукта
+      setAdvantageImagePreviews([]); // Очищаем превью изображений преимуществ
     } else {
+      toast.error("Ошибка добавления товара: " + response.statusText);
       console.error(response.statusText);
     }
   };
 
+  // Переключение открытия выпадающего списка
   const toggleCombobox = (key: string) => {
     setComboboxOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Выбор функции
   const handleFunctionSelect = (functionId: number) => {
-    const updatedFunctions = [...formData.functions];
+    const updatedFunctions = [...(formData.functions || [])];
     if (updatedFunctions.includes(functionId)) {
       updatedFunctions.splice(updatedFunctions.indexOf(functionId), 1);
     } else {
@@ -259,8 +411,9 @@ export default function AddProductPage() {
     setFormData({ ...formData, functions: updatedFunctions });
   };
 
+  // Выбор спецификации
   const handleSpecificationSelect = (specificationId: number) => {
-    const updatedSpecifications = [...formData.specifications];
+    const updatedSpecifications = [...(formData.specifications || [])];
     if (updatedSpecifications.includes(specificationId)) {
       updatedSpecifications.splice(
         updatedSpecifications.indexOf(specificationId),
@@ -272,8 +425,9 @@ export default function AddProductPage() {
     setFormData({ ...formData, specifications: updatedSpecifications });
   };
 
+  // Получение доступных характеристик
   const getAvailableCharacteristics = (modelIndex: number): string[] => {
-    const selectedCharacteristics = formData.models[
+    const selectedCharacteristics = (formData.models ?? [])[
       modelIndex
     ].characteristics.map((char) => char.name);
     return characteristics.filter(
@@ -282,22 +436,17 @@ export default function AddProductPage() {
   };
 
   const STYLE = "bg-white p-6 rounded-lg flex flex-col gap-4";
+
   return (
-    <div className="mx-auto ">
+    <div className="mx-auto">
       <h1 className="text-2xl font-bold mb-4">Добавление товара</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Основные поля */}
         <div className={STYLE}>
           <Input
             name="name"
             placeholder="Название товара"
             value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            name="imageUrl"
-            placeholder="Ссылка на изображение"
-            value={formData.imageUrl}
             onChange={handleChange}
             required
           />
@@ -314,96 +463,123 @@ export default function AddProductPage() {
             value={formData.videoLink}
             onChange={handleChange}
           />
-          <Popover
-            open={openSubCategory}
-            onOpenChange={() => setOpenSubCategory(!openSubCategory)}
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={openSubCategory}
-                className="justify-between"
-              >
-                {formData.subCategoryId
-                  ? subCategory.find((cat) => cat.id === formData.subCategoryId)
-                      ?.name
-                  : "Выберите категорию..."}
-                <ChevronsUpDown className="opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="bg-white p-0">
-              <Command>
-                <CommandInput
-                  placeholder="Поиск категории..."
-                  className="h-9"
-                />
-                <CommandList>
-                  <CommandEmpty>Категория не найдена.</CommandEmpty>
-                  <CommandGroup>
-                    {subCategory.length > 0
-                      ? subCategory.map((category) => (
-                          <CommandItem
-                            key={category.id}
-                            value={category.name}
-                            onSelect={() => {
-                              setFormData({
-                                ...formData,
-                                subCategoryId: category.id,
-                              }); // обновляем subCategoryId
-                              setOpenSubCategory(false); // закрываем поповер после выбора
-                            }}
-                          >
-                            {category.name}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                category.id === formData.subCategoryId
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                          </CommandItem>
-                        ))
-                      : ""}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <div className="flex gap-4">
+            <Popover
+              open={openSubCategory}
+              onOpenChange={() => setOpenSubCategory(!openSubCategory)}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openSubCategory}
+                  className="justify-between"
+                >
+                  {formData.subCategoryId
+                    ? subCategory.find(
+                        (cat) => cat.id === formData.subCategoryId
+                      )?.name
+                    : "Выберите категорию..."}
+                  <ChevronsUpDown className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-white p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Поиск категории..."
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>Категория не найдена.</CommandEmpty>
+                    <CommandGroup>
+                      {subCategory.map((category) => (
+                        <CommandItem
+                          key={category.id}
+                          value={category.name}
+                          onSelect={() => {
+                            setFormData({
+                              ...formData,
+                              subCategoryId: category.id,
+                            });
+                            setOpenSubCategory(false);
+                          }}
+                        >
+                          {category.name}
+                          <Check
+                            className={cn(
+                              "ml-auto",
+                              category.id === formData.subCategoryId
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Button onClick={() => setOpenAddCategory(true)}>
+              Добавить категорию
+            </Button>
+          </div>
         </div>
 
-        {/* Динамические поля для изображений */}
+        {/* Изображения с превью */}
         <div className={STYLE}>
           <h3 className="font-semibold">Изображения товара</h3>
-          {formData.images.map((image, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <Input
-                name={`images[${index}].imageUrl`}
-                placeholder={`Ссылка на изображение #${index + 1}`}
-                value={image.imageUrl}
-                onChange={(e) =>
-                  handleArrayChange("images", index, "imageUrl", e.target.value)
-                }
-                required
-              />
-              <Button
-                type="button"
-                onClick={() => handleRemoveField("images", index)}
+          <div className="space-y-2">
+            {imagePreviews.map((preview, index) => (
+              <div key={index} className="flex items-center space-x-2 mb-4">
+                <Image
+                  src={preview.previewUrl}
+                  alt={preview.fileName}
+                  width={224}
+                  height={76}
+                  className="w-56 h-auto auto object-cover rounded"
+                />
+                <span>{preview.fileName}</span>
+                <Button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  variant="default"
+                >
+                  Удалить
+                </Button>
+              </div>
+            ))}
+            <div className="mt-4 flex text-sm/6 text-gray-600">
+              <label
+                htmlFor="file-upload"
+                className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:outline-hidden hover:text-indigo-500"
               >
-                Удалить
-              </Button>
+                <ImageUp
+                  aria-hidden="true"
+                  className="mx-auto size-12 text-gray-300"
+                />
+                <span className="text-center block leading-tight">
+                  Загрузить
+                  <br /> изображение
+                </span>
+                <Input
+                  id="file-upload"
+                  name="file-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  multiple
+                  className="sr-only"
+                />
+              </label>
             </div>
-          ))}
-          <Button type="button" onClick={() => handleAddField("images")}>
-            Добавить изображение
-          </Button>
+          </div>
         </div>
 
-        {/* Динамические поля для моделей */}
+        {/* Модели */}
         <div className={STYLE}>
           <h3 className="font-semibold">Модели товара</h3>
-          {formData.models.map((model, index) => (
+          {formData.models?.map((model, index) => (
             <div key={index} className="space-y-2 border p-4 rounded-lg">
               <Input
                 name={`models[${index}].name`}
@@ -423,105 +599,120 @@ export default function AddProductPage() {
                 }
                 required
               />
-              {/* Характеристики модели */}
-              {model.characteristics.map((char, charIndex) => (
-                <div key={charIndex} className="flex space-x-2">
-                  <Popover
-                    open={
-                      comboboxOpen[
-                        `models[${index}].characteristics[${charIndex}].name`
-                      ]
-                    }
-                    onOpenChange={() =>
-                      toggleCombobox(
-                        `models[${index}].characteristics[${charIndex}].name`
-                      )
-                    }
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={
-                          comboboxOpen[
-                            `models[${index}].characteristics[${charIndex}].name`
-                          ]
-                        }
-                        className="justify-between"
-                      >
-                        {char.name ? char.name : "Выберите характеристику..."}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="bg-white p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Поиск характеристики..."
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>
-                            Характеристика не найдена.
-                          </CommandEmpty>
-                          <CommandGroup>
-                            {getAvailableCharacteristics(index).map(
-                              (characteristic) => (
-                                <CommandItem
-                                  key={characteristic}
-                                  value={characteristic}
-                                  onSelect={(currentValue) => {
-                                    handleCharacteristicSelect(
-                                      index,
-                                      charIndex,
-                                      currentValue
-                                    );
-                                  }}
+              <div className="space-y-2 border p-4 rounded-md">
+                {model.characteristics.map((char, charIndex) => (
+                  <div key={charIndex} className="flex space-x-2">
+                    <Popover
+                      open={
+                        comboboxOpen[
+                          `models[${index}].characteristics[${charIndex}].name`
+                        ]
+                      }
+                      onOpenChange={() =>
+                        toggleCombobox(
+                          `models[${index}].characteristics[${charIndex}].name`
+                        )
+                      }
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={
+                            comboboxOpen[
+                              `models[${index}].characteristics[${charIndex}].name`
+                            ]
+                          }
+                          className="justify-between"
+                        >
+                          {char.name ? char.name : "Выберите характеристику..."}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="bg-white p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Поиск характеристики..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>
+                              Характеристика не найдена.
+                              <Button
+                                onClick={() => setOpenAddCharacteristic(true)}
+                              >
+                                Добавить характеристику
+                              </Button>
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {getAvailableCharacteristics(index).map(
+                                (characteristic) => (
+                                  <CommandItem
+                                    key={characteristic}
+                                    value={characteristic}
+                                    onSelect={(currentValue) => {
+                                      handleCharacteristicSelect(
+                                        index,
+                                        charIndex,
+                                        currentValue
+                                      );
+                                    }}
+                                  >
+                                    {characteristic}
+                                    <Check
+                                      className={cn(
+                                        "ml-auto",
+                                        char.name === characteristic
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                )
+                              )}
+                              <CommandItem>
+                                <Button
+                                  onClick={() => setOpenAddCharacteristic(true)}
                                 >
-                                  {characteristic}
-                                  <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      char.name === characteristic
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              )
-                            )}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <Input
-                    name={`models[${index}].characteristics[${charIndex}].value`}
-                    placeholder="Значение характеристики"
-                    value={char.value}
-                    onChange={(e) =>
-                      handleArrayChange(
-                        "models",
-                        index,
-                        `characteristics[${charIndex}].value`,
-                        e.target.value
-                      )
-                    }
-                    required
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => handleRemoveCharacteristic(index, charIndex)}
-                  >
-                    Удалить характеристику
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => handleAddCharacteristic(index)}
-              >
-                Добавить характеристику
-              </Button>
+                                  Добавить характеристику
+                                </Button>
+                              </CommandItem>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      name={`models[${index}].characteristics[${charIndex}].value`}
+                      placeholder="Значение характеристики"
+                      value={char.value}
+                      onChange={(e) =>
+                        handleArrayChange(
+                          "models",
+                          index,
+                          `characteristics[${charIndex}].value`,
+                          e.target.value
+                        )
+                      }
+                      required
+                    />
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        handleRemoveCharacteristic(index, charIndex)
+                      }
+                    >
+                      Удалить характеристику
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  onClick={() => handleAddCharacteristic(index)}
+                >
+                  Добавить характеристику
+                </Button>
+              </div>
               <Button
                 type="button"
                 onClick={() => handleRemoveField("models", index)}
@@ -535,65 +726,107 @@ export default function AddProductPage() {
           </Button>
         </div>
 
-        {/* Динамические поля для преимуществ */}
+        {/* Преимущества */}
         <div className={STYLE}>
           <h3 className="font-semibold">Преимущества товара</h3>
-          {formData.advantages.map((advantage, index) => (
-            <div key={index} className="space-y-2 border p-4 rounded-lg">
-              <Input
-                name={`advantages[${index}].name`}
-                placeholder={`Название преимущества #${index + 1}`}
-                value={advantage.name}
-                onChange={(e) =>
-                  handleArrayChange("advantages", index, "name", e.target.value)
-                }
-                required
-              />
-              <Input
-                name={`advantages[${index}].imageUrl`}
-                placeholder={`Ссылка на изображение преимущества #${index + 1}`}
-                value={advantage.imageUrl}
-                onChange={(e) =>
-                  handleArrayChange(
-                    "advantages",
-                    index,
-                    "imageUrl",
-                    e.target.value
-                  )
-                }
-                required
-              />
-              <Textarea
-                name={`advantages[${index}].description`}
-                placeholder={`Описание преимущества #${index + 1}`}
-                value={advantage.description}
-                onChange={(e) =>
-                  handleArrayChange(
-                    "advantages",
-                    index,
-                    "description",
-                    e.target.value
-                  )
-                }
-                required
-              />
-              <Button
-                type="button"
-                onClick={() => handleRemoveField("advantages", index)}
-              >
-                Удалить преимущество
-              </Button>
-            </div>
-          ))}
+          {formData.advantages?.map((advantage, index) => {
+            // Находим соответствующее превью для этого преимущества
+            const preview = advantageImagePreviews.find(
+              (p) =>
+                p.previewUrl === advantage.imageUrl ||
+                p.fileName === advantage.imageUrl
+            );
+
+            return (
+              <div key={index} className="space-y-2 border p-4 rounded-lg">
+                <Input
+                  name={`advantages[${index}].name`}
+                  placeholder={`Название преимущества #${index + 1}`}
+                  value={advantage.name}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "advantages",
+                      index,
+                      "name",
+                      e.target.value
+                    )
+                  }
+                />
+                <div className="space-y-2">
+                  {advantage.imageUrl && (
+                    <div className="flex items-center space-x-2">
+                      <Image
+                        src={preview?.previewUrl || advantage.imageUrl}
+                        alt={advantage.name || `Преимущество ${index + 1}`}
+                        width={256}
+                        height={100}
+                        className="w-64 h-auto object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => handleRemoveAdvantageImage(index)}
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                  )}
+                  {!advantage.imageUrl && (
+                    <div className="mt-4 flex text-sm/6 text-gray-600">
+                      <label
+                        htmlFor="advantage-image-upload"
+                        className="relative cursor-pointer mb-4 rounded-md bg-white font-semibold text-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:outline-hidden hover:text-indigo-500"
+                      >
+                        <ImageUp
+                          aria-hidden="true"
+                          className="mx-auto size-12 text-gray-300"
+                        />
+                        <span className="text-center block leading-tight">
+                          Загрузить
+                          <br /> изображение
+                        </span>
+                        <Input
+                          type="file"
+                          id="advantage-image-upload"
+                          accept="image/*"
+                          onChange={(e) => handleAdvantageImageChange(e, index)}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+                <Textarea
+                  name={`advantages[${index}].description`}
+                  placeholder={`Описание преимущества #${index + 1}`}
+                  value={advantage.description}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "advantages",
+                      index,
+                      "description",
+                      e.target.value
+                    )
+                  }
+                />
+                <Button
+                  type="button"
+                  onClick={() => handleRemoveField("advantages", index)}
+                >
+                  Удалить преимущество
+                </Button>
+              </div>
+            );
+          })}
           <Button type="button" onClick={() => handleAddField("advantages")}>
             Добавить преимущество
           </Button>
         </div>
 
-        {/* Динамические поля для документов */}
+        {/* Документы */}
         <div className={STYLE}>
           <h3 className="font-semibold">Документы товара</h3>
-          {formData.documents.map((document, index) => (
+          {formData.documents?.map((document, index) => (
             <div key={index} className="space-y-2 border p-4 rounded-lg">
               <Input
                 name={`documents[${index}].name`}
@@ -602,7 +835,6 @@ export default function AddProductPage() {
                 onChange={(e) =>
                   handleArrayChange("documents", index, "name", e.target.value)
                 }
-                required
               />
               <Input
                 name={`documents[${index}].url`}
@@ -611,7 +843,6 @@ export default function AddProductPage() {
                 onChange={(e) =>
                   handleArrayChange("documents", index, "url", e.target.value)
                 }
-                required
               />
               <Button
                 type="button"
@@ -626,7 +857,7 @@ export default function AddProductPage() {
           </Button>
         </div>
 
-        {/* Динамические поля для функций (чекбоксы) */}
+        {/* Функции */}
         <div className={STYLE}>
           <h3 className="font-semibold">Функции товара</h3>
           <div className="space-y-2">
@@ -635,16 +866,19 @@ export default function AddProductPage() {
                 <input
                   type="checkbox"
                   value={func.id}
-                  checked={formData.functions.includes(func.id)}
+                  checked={formData.functions?.includes(func.id)}
                   onChange={() => handleFunctionSelect(func.id)}
                 />
                 <span>{func.name}</span>
               </label>
             ))}
           </div>
+          <Button type="button" onClick={() => setOpenAddFunction(true)}>
+            Добавить функцию
+          </Button>
         </div>
 
-        {/* Динамические поля для спецификаций (чекбоксы) */}
+        {/* Спецификации */}
         <div className={STYLE}>
           <h3 className="font-semibold">Спецификации товара</h3>
           <div className="space-y-2">
@@ -653,19 +887,47 @@ export default function AddProductPage() {
                 <input
                   type="checkbox"
                   value={spec.id}
-                  checked={formData.specifications.includes(spec.id)}
+                  checked={formData.specifications?.includes(spec.id)}
                   onChange={() => handleSpecificationSelect(spec.id)}
                 />
                 <span>{spec.name}</span>
               </label>
             ))}
           </div>
+          <Button type="button" onClick={() => setOpenAddSpecification(true)}>
+            Добавить спецификацию
+          </Button>
+        </div>
+        <div className={STYLE}>
+          <label className="flex gap-2">
+            <input
+              type="checkbox"
+              name="slider"
+              checked={formData.slider}
+              onChange={(e) =>
+                setFormData({ ...formData, slider: e.target.checked })
+              }
+            />
+            Отображать товар в слайдере
+          </label>
         </div>
 
-        <Button variant={"secondary"} type="submit">
+        <Button variant="secondary" type="submit">
           Сохранить товар
         </Button>
       </form>
+      <AddCharacteristic
+        isOpen={openAddCharacteristic}
+        onOpenChange={setOpenAddCharacteristic}
+        setCharacteristics={setCharacteristics}
+        characteristics={characteristics}
+      />
+      <AddCategory isOpen={openAddCategory} onOpenChange={setOpenAddCategory} />
+      <AddFunction isOpen={openAddFunction} onOpenChange={setOpenAddFunction} />
+      <AddSpecification
+        isOpen={openAddSpecification}
+        onOpenChange={setOpenAddSpecification}
+      />
     </div>
   );
 }

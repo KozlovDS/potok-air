@@ -52,7 +52,7 @@ const Popup: React.FC<Props> = ({
         aria-describedby={undefined}
         className={cn(
           isDesktop
-            ? " min-w-80 top-0 left-auto right-0 mt-0 flex p-4 overflow-y-auto overflow-x-hidden"
+            ? " min-w-80 max-w-[600px] top-0 left-auto right-0 mt-0 flex p-4 overflow-y-auto overflow-x-hidden"
             : "p-4 mobileSmall:p-8",
           className
         )}
@@ -60,7 +60,7 @@ const Popup: React.FC<Props> = ({
         {!isDesktop && (
           <div className="mx-auto mb-4 h-2 w-[100px] rounded-full bg-secondary" />
         )}
-        <DrawerHeader className="mobile:grid-cols-2 items-center mb-8">
+        <DrawerHeader className="items-center mb-8 justify-between">
           <DrawerTitle className="text-2xl">{title}</DrawerTitle>
           {isDesktop && (
             <DrawerClose asChild className="justify-self-end">

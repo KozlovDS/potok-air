@@ -13,6 +13,10 @@ export async function GET(request: Request): Promise<NextResponse> {
       where: {
         subCategoryId: subCategoryId,
       },
+      include: {
+        // Добавляем включение изображений
+        images: true,
+      },
       orderBy: {
         id: "asc",
       },

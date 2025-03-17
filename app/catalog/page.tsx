@@ -1,16 +1,12 @@
 "use client";
 
-import {
-  ProductGroupList,
-  Sidebar,
-  Filters,
-  Category,
-} from "@/components/shared";
+import { ProductGroupList, Sidebar, Category } from "@/components/shared";
 import { SkeletonProductCard } from "@/components/shared/skeletons/product-group-skeleton";
 import { Button, Container, Title } from "@/components/ui";
+import { Product } from "@/lib/types";
 import { Api } from "@/services/api-client";
 import { useCategoryStore } from "@/store/category";
-import { SubCategory, Products } from "@prisma/client";
+import { SubCategory } from "@prisma/client";
 import { Filter } from "lucide-react";
 import dynamic from "next/dynamic";
 import React from "react";
@@ -20,7 +16,7 @@ const Popup = dynamic(() => import("@/components/shared/popup"), {
 });
 
 type SubCategoryWithProducts = SubCategory & {
-  products: Products[];
+  products: Product[];
 };
 
 export default function Catalog() {
@@ -51,7 +47,7 @@ export default function Catalog() {
       </Button>
       <Popup isOpen={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
         <Category setOpen={setMobileSidebarOpen} />
-        <Filters />
+        {/* <Filters /> */}
       </Popup>
       <div
         aria-labelledby="products-heading"

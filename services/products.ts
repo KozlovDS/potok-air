@@ -12,6 +12,16 @@ export const getProducts = async (categoryId?: number) => {
   }
 };
 
+export const getSliderProducts = async () => {
+  try {
+    const { data } = await axiosInstance.get("/products/slider");
+    return data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw error;
+  }
+};
+
 export const getSimilarProducts = async (subCategoryId?: number) => {
   try {
     const { data } = await axiosInstance.get("/products/similar", {

@@ -15,7 +15,12 @@ export async function GET(request: Request): Promise<NextResponse> {
           },
         },
         include: {
-          products: true,
+          products: {
+            include: {
+              // Добавляем включение изображений
+              images: true,
+            },
+          },
         },
       });
     } else {
@@ -27,7 +32,12 @@ export async function GET(request: Request): Promise<NextResponse> {
           },
         },
         include: {
-          products: true,
+          products: {
+            include: {
+              // Добавляем включение изображений
+              images: true,
+            },
+          },
         },
         orderBy: {
           id: "asc",

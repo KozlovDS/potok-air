@@ -1,9 +1,9 @@
 model Products {
   id              Int     @id @default(autoincrement())
   name            String
-  imageUrl        String
   description     String
   videoLink       String?
+  slider          Boolean @default(false)
 
   subcategory     SubCategory @relation(fields: [subCategoryId], references: [id])
   subCategoryId   Int

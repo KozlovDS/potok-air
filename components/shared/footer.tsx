@@ -34,21 +34,27 @@ export const Footer: React.FC<Props> = ({ className }) => {
           </div>
         </div>
         <div className="flex flex-col gap-4 items-end">
-          <address className="not-italic">
+          <address className="not-italic text-right">
             <a
-              href="tel:+79999999999"
-              className="text-3xl"
+              href="tel:8(499)394-48-93"
+              className="text-2xl block"
               aria-label="Позвонить нам"
             >
-              +7 (999) 999-99-99
+              8(499)394-48-93
             </a>
-            <br />
             <a
-              href="mailto:mail@shop.ru"
-              className="text-accent text-3xl mb-10"
+              href="tel:8(926)933-37-46"
+              className="text-2xl block mb-2"
+              aria-label="Позвонить нам"
+            >
+              8(926)933-37-46
+            </a>
+            <a
+              href="mailto:potokair@yandex.ru"
+              className="text-accent text-2xl mb-10"
               aria-label="Написать нам"
             >
-              mail@shop.ru
+              potokair@yandex.ru
             </a>
           </address>
           <SocialLinks />

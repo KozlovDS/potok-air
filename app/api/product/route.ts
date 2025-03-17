@@ -40,7 +40,6 @@ export async function GET(request: Request): Promise<NextResponse> {
 export async function POST(request: Request) {
   const {
     name,
-    imageUrl,
     description,
     videoLink,
     subCategoryId,
@@ -56,7 +55,6 @@ export async function POST(request: Request) {
     const newProduct = await prisma.products.create({
       data: {
         name,
-        imageUrl,
         description,
         videoLink,
         subCategoryId,

@@ -26,11 +26,17 @@ export const MobileMenu: React.FC<Props> = ({ menuList, onClose }) => (
       </ul>
     </nav>
     <div className="flex flex-col">
-      <a href="tel:+79999999999" className="text-lg mt-8">
-        +7 (495) 132 - 05 -50
+      <a href="tel:8(499)394-48-93" className="text-lg mt-8">
+        8(499)394-48-93
       </a>
-      <a href="mailto:mail@shop.ru" className="text-lg mt-4 mb-8 text-accent">
-        mail@shop.ru
+      <a href="tel:8(926)933-37-46" className="text-lg">
+        8(926)933-37-46
+      </a>
+      <a
+        href="mailto:potokair@yandex.ru"
+        className="text-lg mt-4 mb-8 text-accent"
+      >
+        potokair@yandex.ru
       </a>
     </div>
     <SocialLinks className="flex-grow mb-8" />

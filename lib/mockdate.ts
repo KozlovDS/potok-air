@@ -13,7 +13,6 @@ export const MENU_LIST = [
   { name: "Главная", link: "/" },
   { name: "Каталог", link: "/catalog" },
   { name: "О нас", link: "/about" },
-  { name: "Доставка", link: "/delivery" },
 ];
 
 export const categories = [
@@ -22,15 +21,12 @@ export const categories = [
     subCategories: [
       {
         name: "Инверторные",
-        link: "#",
       },
       {
         name: "Тепловые насосы",
-        link: "#",
       },
       {
         name: "On/Off сплит-системы",
-        link: "#",
       },
     ],
   },
@@ -39,23 +35,18 @@ export const categories = [
     subCategories: [
       {
         name: "Наружные блоки",
-        link: "#",
       },
       {
         name: "Настенные внутренние блоки",
-        link: "#",
       },
       {
         name: "Кассетные внутренние блоки",
-        link: "#",
       },
       {
         name: "Канальные внутренние блоки",
-        link: "#",
       },
       {
         name: "Консольные внутренние блоки",
-        link: "#",
       },
     ],
   },
@@ -64,19 +55,15 @@ export const categories = [
     subCategories: [
       {
         name: "Кассетные сплит-системы",
-        link: "#",
       },
       {
         name: "Полупромышленные канальные кондиционеры",
-        link: "#",
       },
       {
         name: "Напольно-потолочные",
-        link: "#",
       },
       {
         name: "Колонные",
-        link: "#",
       },
     ],
   },
@@ -85,15 +72,12 @@ export const categories = [
     subCategories: [
       {
         name: "Воздухоохлаждаемые",
-        link: "#",
       },
       {
         name: "Водоохлаждаемые",
-        link: "#",
       },
       {
         name: "Специальные",
-        link: "#",
       },
     ],
   },
@@ -105,136 +89,9 @@ export const products: Products[] = [
     name: "OP Smart Heat Pump",
     description:
       "Полностью инверторная сплит-система оснащена DC-инверторным компрессором и DC-инверторными вентиляторами наружного и внутреннего блоков. Благодаря увеличенным теплообменникам, встроенному EXV-клапану и экологичному фреону R32 кондиционер способен обогревать помещение при температуре наружного воздуха до -30°С. Высочайший класс энергоэффективности А+++ означает, что оборудование будет работать не только эффективно, но и экономично. Внутренний блок поставляется с двухступенчатой системой очистки воздуха и биполярным ионизатором. Система поддерживает удаленное управление по Wi-Fi сети (опция).",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/1cc/300_200_1619711fa078991f0a23d032687646b21/xbauipvi7k4n0kdibw3ks8a7rz2u2zeb.png",
     subCategoryId: 1,
     videoLink: "https://mdv-aircond.ru/upload/video/video_review_OP.mp4",
-  },
-  {
-    id: 2,
-    name: "Тепловые насосы Nomad Tumbler",
-    description: "Описание 2",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/6b3/300_200_1619711fa078991f0a23d032687646b21/s26c945h1moy69xrulj6ngy3yunn753k.png",
-    subCategoryId: 1,
-    videoLink: "",
-  },
-  {
-    id: 3,
-    name: "On/Off сплит-системы Focus Paper Refill",
-    description: "Описание 3",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/0e0/300_200_1619711fa078991f0a23d032687646b21/vmpd33xplrctmkj1ylg8jevli4btr9gu.png",
-    subCategoryId: 1,
-    videoLink: "",
-  },
-  {
-    id: 4,
-    name: "Наружные блоки Machined Mechanical Pencil",
-    description: "Описание 4",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/67c/300_200_1619711fa078991f0a23d032687646b21/oluwgwcs5swd6gibd76s243icrv22qix.png",
-    subCategoryId: 1,
-    videoLink: "",
-  },
-  {
-    id: 5,
-    name: "Настенные внутренние блоки Earthen Bottle",
-    description: "Описание 5",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/1cc/300_200_1619711fa078991f0a23d032687646b21/xbauipvi7k4n0kdibw3ks8a7rz2u2zeb.png",
-    subCategoryId: 1,
-    videoLink: "",
-  },
-  {
-    id: 6,
-    name: "Кассетные внутренние блоки Nomad Tumbler",
-    description: "Описание 6",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/6b3/300_200_1619711fa078991f0a23d032687646b21/s26c945h1moy69xrulj6ngy3yunn753k.png",
-    subCategoryId: 2,
-    videoLink: "",
-  },
-  {
-    id: 7,
-    name: "Канальные внутренние блоки Focus Paper Refill",
-    description: "Описание 7",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/0e0/300_200_1619711fa078991f0a23d032687646b21/vmpd33xplrctmkj1ylg8jevli4btr9gu.png",
-    subCategoryId: 2,
-    videoLink: "",
-  },
-  {
-    id: 8,
-    name: "Консольные внутренние блоки Machined Mechanical Pencil",
-    description: "Описание 8",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/67c/300_200_1619711fa078991f0a23d032687646b21/oluwgwcs5swd6gibd76s243icrv22qix.png",
-    subCategoryId: 3,
-    videoLink: "",
-  },
-  {
-    id: 9,
-    name: "Кассетные сплит-системы Earthen Bottle",
-    description: "Описание 9",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/1cc/300_200_1619711fa078991f0a23d032687646b21/xbauipvi7k4n0kdibw3ks8a7rz2u2zeb.png",
-    subCategoryId: 3,
-    videoLink: "",
-  },
-  {
-    id: 10,
-    name: "Полупромышленные канальные кондиционеры Nomad Tumbler",
-    description: "Описание 10",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/6b3/300_200_1619711fa078991f0a23d032687646b21/s26c945h1moy69xrulj6ngy3yunn753k.png",
-    subCategoryId: 3,
-    videoLink: "",
-  },
-  {
-    id: 11,
-    name: "Напольно-потолочные Focus Paper Refill",
-    description: "Описание 11",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/0e0/300_200_1619711fa078991f0a23d032687646b21/vmpd33xplrctmkj1ylg8jevli4btr9gu.png",
-    subCategoryId: 11,
-    videoLink: "",
-  },
-  {
-    id: 12,
-    name: "Колонные Machined Mechanical Pencil",
-    description: "Описание 12",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/67c/300_200_1619711fa078991f0a23d032687646b21/oluwgwcs5swd6gibd76s243icrv22qix.png",
-    subCategoryId: 12,
-    videoLink: "",
-  },
-  {
-    id: 13,
-    name: "Воздухоохлаждаемые Earthen Bottle",
-    description: "Описание 13",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/1cc/300_200_1619711fa078991f0a23d032687646b21/xbauipvi7k4n0kdibw3ks8a7rz2u2zeb.png",
-    subCategoryId: 13,
-    videoLink: "",
-  },
-  {
-    id: 14,
-    name: "Водоохлаждаемые Nomad Tumbler",
-    description: "Описание 14",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/6b3/300_200_1619711fa078991f0a23d032687646b21/s26c945h1moy69xrulj6ngy3yunn753k.png",
-    subCategoryId: 14,
-    videoLink: "",
-  },
-  {
-    id: 15,
-    name: "Специальные Focus Paper Refill",
-    description: "Описание 15",
-    imageUrl:
-      "https://mdv-aircond.ru/upload/resize_cache/iblock/0e0/300_200_1619711fa078991f0a23d032687646b21/vmpd33xplrctmkj1ylg8jevli4btr9gu.png",
-    subCategoryId: 15,
-    videoLink: "",
+    slider: false,
   },
 ];
 

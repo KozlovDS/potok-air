@@ -7,6 +7,7 @@ import { MobileMenu } from "./mobile-menu";
 import { Phone } from "lucide-react";
 import { MENU_LIST } from "@/lib/mockdate";
 import dynamic from "next/dynamic";
+import { CallForm } from "./call-form";
 
 const Popup = dynamic(() => import("@/components/shared/popup"), {
   ssr: false,
@@ -22,6 +23,7 @@ const CLASS_BURGER_LINE =
 export const Header: React.FC<Props> = ({ className }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = React.useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +43,11 @@ export const Header: React.FC<Props> = ({ className }) => {
       <Container className="flex gap-4 items-center justify-between bg-white rounded-b-[16px] shadow-header mb-6 mobile:mb-8 tablet:mb-10 laptop:mb-14 px-4 py-3 mobile:rounded-full mobile:mt-4 mobile:px-6 tablet:px-8 tablet:py-4 laptop:py-5">
         <Logo />
         <Navigation menuList={MENU_LIST} className="hidden tablet:flex" />
-        <Button variant={"default"} size={isMobile ? "icon" : "default"}>
+        <Button
+          variant={"default"}
+          onClick={() => setRequestOpen(true)}
+          size={isMobile ? "icon" : "default"}
+        >
           {isMobile ? <Phone /> : "Заказать звонок"}
         </Button>
 
@@ -85,6 +91,14 @@ export const Header: React.FC<Props> = ({ className }) => {
 
       <Popup isOpen={isOpen} onOpenChange={setOpen}>
         <MobileMenu onClose={setOpen} menuList={MENU_LIST} />
+      </Popup>
+      <Popup
+        isOpen={requestOpen}
+        onOpenChange={setRequestOpen}
+        title="Заявка на обратный звонок"
+        className="mobile:p-16 mobile:w-[600]"
+      >
+        <CallForm popupClose={setRequestOpen} />
       </Popup>
     </header>
   );

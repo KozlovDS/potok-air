@@ -23,8 +23,12 @@ const Functions: React.FC<Props> = ({ className, functions, productName }) => {
         text={`Функциональные особенности серии ${productName}`}
         className="mb-6"
       />
-      <div className="grid grid-cols-1 tablet:grid-cols-2 gap-12">
-        <Accordion type="single" collapsible>
+      <div>
+        <Accordion
+          className="grid grid-cols-1 tablet:grid-cols-2 gap-x-8"
+          type="single"
+          collapsible
+        >
           {functions.map((functionality) => (
             <AccordionItem key={functionality.id} value={`${functionality.id}`}>
               <AccordionTrigger className="font-semibold">

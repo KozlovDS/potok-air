@@ -19,7 +19,7 @@ import Image from "next/image";
 
 const FormSchema = z.object({
   username: z.string().min(2, {
-    message: "Имя пользователя должно состоять минимум из 2 символов.",
+    message: "Имя должно состоять минимум из 2 символов.",
   }),
   phone: z
     .string()
@@ -119,7 +119,6 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 flex flex-col h-full"
       >
-        
         <FormField
           control={form.control}
           name="username"
@@ -236,7 +235,7 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
             Отправить
           </Button>
           <p className="font-medium">
-            Нажимая кнопку «Подписаться», вы подтверждаете свое согласие на{" "}
+            Нажимая кнопку Отправить, вы подтверждаете свое согласие на{" "}
             <Link
               href="/privacy-policy"
               className="text-accent underline underline-offset-2"
@@ -246,7 +245,6 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
             </Link>
           </p>
         </div>
-
       </form>
     </Form>
   );

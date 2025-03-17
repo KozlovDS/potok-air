@@ -8,7 +8,6 @@ model Category {
 model SubCategory {
   id        Int     @id @default(autoincrement())
   name      String
-  link      String
   category  Category @relation(fields: [categoryId], references: [id])
   categoryId Int
   products  Products[]

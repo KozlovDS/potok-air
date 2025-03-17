@@ -3,15 +3,18 @@
 import React from "react";
 import { ProductCard } from "./product-card";
 import { Title } from "../ui/title";
-import { Products } from "@prisma/client";
+
 import { cn } from "@/lib/utils";
 import { useIntersection } from "react-use";
 import { useCategoryStore } from "@/store/category";
+import { Product } from "@/lib/types";
+import { SkeletonProductCard } from "./skeletons/product-group-skeleton";
 
 interface ProductGroupList {
   title: string;
-  products: Products[];
-  categoryId: number;
+  products: Product[];
+  categoryId?: number;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -19,6 +22,7 @@ export const ProductGroupList: React.FC<ProductGroupList> = ({
   title,
   products,
   className,
+  isLoading = false,
   categoryId,
 }) => {
   const setActiveSubCategoryId = useCategoryStore(
@@ -31,9 +35,15 @@ export const ProductGroupList: React.FC<ProductGroupList> = ({
 
   React.useEffect(() => {
     if (intersection?.isIntersecting) {
-      setActiveSubCategoryId(categoryId);
+      if (categoryId !== undefined) {
+        setActiveSubCategoryId(categoryId);
+      }
     }
   }, [intersection?.isIntersecting, categoryId, setActiveSubCategoryId]);
+
+  if (isLoading) {
+    return <SkeletonProductCard />;
+  }
 
   return (
     <div
@@ -53,10 +63,7 @@ export const ProductGroupList: React.FC<ProductGroupList> = ({
             key={product.id}
             id={product.id}
             name={product.name}
-            imageUrl={product.imageUrl}
-            subCategoryId={product.subCategoryId}
-            description={""}
-            videoLink={null}
+            images={product.images}
           />
         ))}
       </div>

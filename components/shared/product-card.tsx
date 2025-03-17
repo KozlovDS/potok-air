@@ -1,9 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { Products } from "@prisma/client";
-import Link from "next/link";
 
-export const ProductCard: React.FC<Products> = ({ id, imageUrl, name }) => {
+import Link from "next/link";
+import { Product } from "@/lib/types";
+
+export const ProductCard: React.FC<Product> = ({ id, images, name }) => {
   return (
     <Link
       key={id}
@@ -13,7 +14,7 @@ export const ProductCard: React.FC<Products> = ({ id, imageUrl, name }) => {
       <div className="grow flex items-center">
         <Image
           alt={name}
-          src={imageUrl}
+          src={images[0].imageUrl}
           width={400}
           height={100}
           priority={true}

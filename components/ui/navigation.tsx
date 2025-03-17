@@ -14,8 +14,8 @@ export const Navigation: React.FC<Props> = ({ className, menuList }) => {
   const pathName = usePathname();
 
   return (
-    <nav className={className}>
-      <ul className={cn("flex gap-1 items-center")}>
+    <nav>
+      <ul className={cn("flex gap-1 items-center", className)}>
         {menuList.map((item, index) => (
           <li key={index}>
             <Link

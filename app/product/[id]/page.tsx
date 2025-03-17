@@ -23,6 +23,7 @@ import {
 } from "@/components/shared/productPage";
 import { ProductGroupList } from "@/components/shared";
 import { RequestForm } from "@/components/shared/productPage/requestForm";
+import { Product } from "@/lib/types";
 
 const Popup = dynamic(() => import("@/components/shared/popup"), {
   ssr: false,
@@ -41,7 +42,7 @@ const Functions = dynamic(
   () => import("@/components/shared/productPage/functions")
 );
 
-interface Product extends Products {
+interface ProductItem extends Products {
   images: { id: number; imageUrl: string; productId: number }[];
   models: {
     id: number;
@@ -62,9 +63,9 @@ export default function ProductPage({
 }) {
   const { id } = React.use(params);
 
-  const [product, setProduct] = React.useState<Product | null>(null);
+  const [product, setProduct] = React.useState<ProductItem | null>(null);
   const [similarProducts, setSimilarProducts] = React.useState<
-    Products[] | null
+    Product[] | null
   >(null);
   const [isLoading, setIsLoading] = React.useState(true); // Add loading state
   const price = useProductStore((state) => state.price);
@@ -147,52 +148,67 @@ export default function ProductPage({
             className="w-full bg-white rounded-3xl p-4 mb-16"
           >
             <TabsList className="gap-x-4 gap-y-2 mb-4 sticky z-10 top-4 bg-background rounded-md px-4 py-2 flex-wrap">
-              <TabsTrigger value="description" className=" mobile:text-base">
-                Описание товара
-              </TabsTrigger>
-              <TabsTrigger value="documents" className=" mobile:text-base">
-                Документы
-              </TabsTrigger>
-              <TabsTrigger value="advantages" className=" mobile:text-base">
-                Преимущества
-              </TabsTrigger>
+              {product.description && (
+                <TabsTrigger value="description" className=" mobile:text-base">
+                  Описание товара
+                </TabsTrigger>
+              )}
+              {product.documents.length > 0 && (
+                <TabsTrigger value="documents" className=" mobile:text-base">
+                  Документы
+                </TabsTrigger>
+              )}
+              {product.advantages.length > 0 && (
+                <TabsTrigger value="advantages" className=" mobile:text-base">
+                  Преимущества
+                </TabsTrigger>
+              )}
               {product.videoLink && (
                 <TabsTrigger value="video" className=" mobile:text-base">
                   Видеообзор
                 </TabsTrigger>
               )}
-              <TabsTrigger value="functions" className=" mobile:text-base">
-                Функции
-              </TabsTrigger>
+              {product.functions.length > 0 && (
+                <TabsTrigger value="functions" className=" mobile:text-base">
+                  Функции
+                </TabsTrigger>
+              )}
             </TabsList>
-            <TabsContent value="description">
-              <ProductDescription
-                description={product.description}
-                name={product.name}
-                specifications={product.specification}
-              />
-            </TabsContent>
-            <TabsContent value="documents">
-              <ProductDocument documents={product.documents} />
-            </TabsContent>
-            <TabsContent value="advantages">
-              <ProductAdvantage
-                advantages={product.advantages}
-                productName={product.name}
-              />
-            </TabsContent>
+            {product.description && (
+              <TabsContent value="description">
+                <ProductDescription
+                  description={product.description}
+                  name={product.name}
+                  specifications={product.specification}
+                />
+              </TabsContent>
+            )}
+            {product.documents && (
+              <TabsContent value="documents">
+                <ProductDocument documents={product.documents} />
+              </TabsContent>
+            )}
+            {product.advantages && (
+              <TabsContent value="advantages">
+                <ProductAdvantage
+                  advantages={product.advantages}
+                  productName={product.name}
+                />
+              </TabsContent>
+            )}
             {product.videoLink && (
               <TabsContent value="video">
                 <Video videoLink={product.videoLink} />
               </TabsContent>
             )}
-
-            <TabsContent value="functions">
-              <Functions
-                productName={product.name}
-                functions={product.functions}
-              />
-            </TabsContent>
+            {product.functions && (
+              <TabsContent value="functions">
+                <Functions
+                  productName={product.name}
+                  functions={product.functions}
+                />
+              </TabsContent>
+            )}
           </Tabs>
           {similarProducts && (
             <ProductGroupList
