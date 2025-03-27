@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const functions = await prisma.productFunctions.findMany();
+    const functions = await prisma.productFunctions.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+    });
 
     return NextResponse.json(functions);
   } catch (error) {

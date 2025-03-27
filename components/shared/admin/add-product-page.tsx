@@ -29,6 +29,7 @@ import { AddCategory } from "./add-category";
 import Image from "next/image";
 import { AddFunction } from "./add-function";
 import { AddSpecification } from "./add-specification";
+import { CharacteristicsList } from "@prisma/client";
 
 export default function AddProductPage() {
   // Состояние формы
@@ -72,9 +73,8 @@ export default function AddProductPage() {
   const [advantageImagePreviews, setAdvantageImagePreviews] = useState<
     { previewUrl: string; fileName: string }[]
   >([]);
-  const [characteristics, setCharacteristics] = useState<string[]>([]);
-  const [comboboxOpen, setComboboxOpen] = useState<{ [key: string]: boolean }>(
-    {}
+  const [characteristics, setCharacteristics] = useState<CharacteristicsList[]>(
+    []
   );
 
   // Загрузка данных при монтировании компонента
@@ -109,7 +109,7 @@ export default function AddProductPage() {
     async function fetchCharacteristics() {
       const response = await fetch("/api/characteristics");
       const data = await response.json();
-      setCharacteristics(data.map((char: { name: string }) => char.name));
+      setCharacteristics(data);
     }
     fetchCharacteristics();
   }, []);
@@ -309,16 +309,6 @@ export default function AddProductPage() {
     setFormData({ ...formData, [arrayName]: updatedArray });
   };
 
-  // Добавление характеристики в модель
-  const handleAddCharacteristic = (modelIndex: number) => {
-    const updatedModels = [...(formData.models || [])];
-    updatedModels[modelIndex].characteristics.push({
-      name: "",
-      value: "",
-    });
-    setFormData({ ...formData, models: updatedModels });
-  };
-
   // Удаление элемента из массива
   const handleRemoveField = (arrayName: keyof Product, index: number) => {
     const updatedArray = Array.isArray(formData[arrayName])
@@ -327,46 +317,30 @@ export default function AddProductPage() {
     setFormData({ ...formData, [arrayName]: updatedArray });
   };
 
-  // Удаление характеристики из модели
-  const handleRemoveCharacteristic = (
-    modelIndex: number,
-    charIndex: number
-  ) => {
-    const updatedModels = [...(formData.models || [])];
-    updatedModels[modelIndex].characteristics = updatedModels[
-      modelIndex
-    ].characteristics.filter((_, i) => i !== charIndex);
-    setFormData({ ...formData, models: updatedModels });
-  };
-
-  // Выбор характеристики
-  const handleCharacteristicSelect = (
-    modelIndex: number,
-    charIndex: number,
-    selectedName: string
-  ) => {
-    const updatedModels = [...(formData.models || [])];
-    updatedModels[modelIndex].characteristics[charIndex].name = selectedName;
-    updatedModels[modelIndex].characteristics[charIndex].value = "";
-    setFormData({ ...formData, models: updatedModels });
-    toggleCombobox(`models[${modelIndex}].characteristics[${charIndex}].name`);
-  };
-
   // Отправка формы
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(JSON.stringify(formData, null, 2));
+    const filteredFormData = {
+      ...formData,
+      models: formData.models?.map((model) => ({
+        ...model,
+        characteristics: model.characteristics.filter(
+          (char) => char.value.trim() !== ""
+        ),
+      })),
+    };
+
+    console.log(JSON.stringify(filteredFormData, null, 2));
     const response = await fetch("/api/product", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(filteredFormData),
     });
 
     if (response.ok) {
       toast("Товар успешно добавлен.");
-
       setFormData({
         id: 0,
         name: "",
@@ -379,25 +353,20 @@ export default function AddProductPage() {
           {
             name: "",
             price: "",
-            characteristics: [{ name: "", value: "" }],
+            characteristics: [],
           },
         ],
         advantages: [{ name: "", imageUrl: "", description: "" }],
-        documents: [{ name: "", url: "" }],
+        documents: [],
         functions: [],
         specifications: [],
       });
-      setImagePreviews([]); // Очищаем превью изображений продукта
-      setAdvantageImagePreviews([]); // Очищаем превью изображений преимуществ
+      setImagePreviews([]);
+      setAdvantageImagePreviews([]);
     } else {
       toast.error("Ошибка добавления товара: " + response.statusText);
       console.error(response.statusText);
     }
-  };
-
-  // Переключение открытия выпадающего списка
-  const toggleCombobox = (key: string) => {
-    setComboboxOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   // Выбор функции
@@ -423,16 +392,6 @@ export default function AddProductPage() {
       updatedSpecifications.push(specificationId);
     }
     setFormData({ ...formData, specifications: updatedSpecifications });
-  };
-
-  // Получение доступных характеристик
-  const getAvailableCharacteristics = (modelIndex: number): string[] => {
-    const selectedCharacteristics = (formData.models ?? [])[
-      modelIndex
-    ].characteristics.map((char) => char.name);
-    return characteristics.filter(
-      (char) => !selectedCharacteristics.includes(char)
-    );
   };
 
   const STYLE = "bg-white p-6 rounded-lg flex flex-col gap-4";
@@ -492,29 +451,30 @@ export default function AddProductPage() {
                   <CommandList>
                     <CommandEmpty>Категория не найдена.</CommandEmpty>
                     <CommandGroup>
-                      {subCategory.map((category) => (
-                        <CommandItem
-                          key={category.id}
-                          value={category.name}
-                          onSelect={() => {
-                            setFormData({
-                              ...formData,
-                              subCategoryId: category.id,
-                            });
-                            setOpenSubCategory(false);
-                          }}
-                        >
-                          {category.name}
-                          <Check
-                            className={cn(
-                              "ml-auto",
-                              category.id === formData.subCategoryId
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
+                      {subCategory.length > 0 &&
+                        subCategory.map((category) => (
+                          <CommandItem
+                            key={category.id}
+                            value={category.name}
+                            onSelect={() => {
+                              setFormData({
+                                ...formData,
+                                subCategoryId: category.id,
+                              });
+                              setOpenSubCategory(false);
+                            }}
+                          >
+                            {category.name}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                category.id === formData.subCategoryId
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -600,117 +560,77 @@ export default function AddProductPage() {
                 required
               />
               <div className="space-y-2 border p-4 rounded-md">
-                {model.characteristics.map((char, charIndex) => (
-                  <div key={charIndex} className="flex space-x-2">
-                    <Popover
-                      open={
-                        comboboxOpen[
-                          `models[${index}].characteristics[${charIndex}].name`
-                        ]
-                      }
-                      onOpenChange={() =>
-                        toggleCombobox(
-                          `models[${index}].characteristics[${charIndex}].name`
-                        )
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={
-                            comboboxOpen[
-                              `models[${index}].characteristics[${charIndex}].name`
-                            ]
-                          }
-                          className="justify-between"
-                        >
-                          {char.name ? char.name : "Выберите характеристику..."}
-                          <ChevronsUpDown className="opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="bg-white p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Поиск характеристики..."
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>
-                              Характеристика не найдена.
-                              <Button
-                                onClick={() => setOpenAddCharacteristic(true)}
-                              >
-                                Добавить характеристику
-                              </Button>
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {getAvailableCharacteristics(index).map(
-                                (characteristic) => (
-                                  <CommandItem
-                                    key={characteristic}
-                                    value={characteristic}
-                                    onSelect={(currentValue) => {
-                                      handleCharacteristicSelect(
-                                        index,
-                                        charIndex,
-                                        currentValue
-                                      );
-                                    }}
-                                  >
-                                    {characteristic}
-                                    <Check
-                                      className={cn(
-                                        "ml-auto",
-                                        char.name === characteristic
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                  </CommandItem>
-                                )
-                              )}
-                              <CommandItem>
-                                <Button
-                                  onClick={() => setOpenAddCharacteristic(true)}
-                                >
-                                  Добавить характеристику
-                                </Button>
-                              </CommandItem>
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <Input
-                      name={`models[${index}].characteristics[${charIndex}].value`}
-                      placeholder="Значение характеристики"
-                      value={char.value}
-                      onChange={(e) =>
-                        handleArrayChange(
-                          "models",
-                          index,
-                          `characteristics[${charIndex}].value`,
-                          e.target.value
-                        )
-                      }
-                      required
-                    />
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        handleRemoveCharacteristic(index, charIndex)
-                      }
-                    >
-                      Удалить характеристику
-                    </Button>
-                  </div>
-                ))}
+                <h4 className="font-medium">Характеристики</h4>
+                {characteristics
+                  .sort((a, b) => a.order_number - b.order_number) // Сортировка по order_number
+                  .map((char, charIndex) => {
+                    const charValue =
+                      model.characteristics.find((c) => c.name === char.name)
+                        ?.value || "";
+                    return (
+                      <div
+                        key={charIndex}
+                        className="border-b flex pb-2 items-center"
+                      >
+                        <span className="w-1/3">{char.name}</span>
+                        <Input
+                          placeholder="Значение"
+                          value={charValue}
+                          onChange={(e) => {
+                            const updatedModels = [...(formData.models || [])];
+                            const newValue = e.target.value.trim();
+                            const existingCharIndex = updatedModels[
+                              index
+                            ].characteristics.findIndex(
+                              (c) => c.name === char.name
+                            );
+
+                            if (newValue === "" && existingCharIndex !== -1) {
+                              // Удаляем характеристику, если значение стало пустым
+                              updatedModels[index].characteristics.splice(
+                                existingCharIndex,
+                                1
+                              );
+                            } else if (newValue !== "") {
+                              if (existingCharIndex !== -1) {
+                                // Обновляем значение существующей характеристики
+                                updatedModels[index].characteristics[
+                                  existingCharIndex
+                                ].value = newValue;
+                              } else {
+                                // Добавляем новую характеристику в правильном порядке
+                                const updatedCharacteristics = characteristics
+                                  .map((c) => {
+                                    if (c.name === char.name) {
+                                      return { name: c.name, value: newValue };
+                                    }
+                                    const existingChar = updatedModels[
+                                      index
+                                    ].characteristics.find(
+                                      (ec) => ec.name === c.name
+                                    );
+                                    return existingChar || undefined;
+                                  })
+                                  .filter((c) => c !== undefined); // Убираем undefined
+                                updatedModels[index].characteristics =
+                                  updatedCharacteristics as {
+                                    name: string;
+                                    value: string;
+                                  }[];
+                              }
+                            }
+                            setFormData({ ...formData, models: updatedModels });
+                          }}
+                          className="w-2/3"
+                        />
+                      </div>
+                    );
+                  })}
                 <Button
                   type="button"
-                  onClick={() => handleAddCharacteristic(index)}
+                  onClick={() => setOpenAddCharacteristic(true)}
                 >
-                  Добавить характеристику
+                  Добавить новую характеристику
                 </Button>
               </div>
               <Button
@@ -861,17 +781,18 @@ export default function AddProductPage() {
         <div className={STYLE}>
           <h3 className="font-semibold">Функции товара</h3>
           <div className="space-y-2">
-            {functions.map((func) => (
-              <label key={func.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value={func.id}
-                  checked={formData.functions?.includes(func.id)}
-                  onChange={() => handleFunctionSelect(func.id)}
-                />
-                <span>{func.name}</span>
-              </label>
-            ))}
+            {functions.length > 0 &&
+              functions.map((func) => (
+                <label key={func.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={func.id}
+                    checked={formData.functions?.includes(func.id)}
+                    onChange={() => handleFunctionSelect(func.id)}
+                  />
+                  <span>{func.name}</span>
+                </label>
+              ))}
           </div>
           <Button type="button" onClick={() => setOpenAddFunction(true)}>
             Добавить функцию
@@ -882,17 +803,18 @@ export default function AddProductPage() {
         <div className={STYLE}>
           <h3 className="font-semibold">Спецификации товара</h3>
           <div className="space-y-2">
-            {specificationsList.map((spec) => (
-              <label key={spec.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value={spec.id}
-                  checked={formData.specifications?.includes(spec.id)}
-                  onChange={() => handleSpecificationSelect(spec.id)}
-                />
-                <span>{spec.name}</span>
-              </label>
-            ))}
+            {specificationsList.length > 0 &&
+              specificationsList.map((spec) => (
+                <label key={spec.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={spec.id}
+                    checked={formData.specifications?.includes(spec.id)}
+                    onChange={() => handleSpecificationSelect(spec.id)}
+                  />
+                  <span>{spec.name}</span>
+                </label>
+              ))}
           </div>
           <Button type="button" onClick={() => setOpenAddSpecification(true)}>
             Добавить спецификацию

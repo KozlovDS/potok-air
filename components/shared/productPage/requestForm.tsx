@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
+import { CircleX } from "lucide-react";
 
 const FormSchema = z.object({
   username: z.string().min(2, {
@@ -39,7 +40,7 @@ interface Props {
 }
 
 export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
-  const [requestStatus, setRequestStatus] = React.useState(false);
+  const [requestStatus, setRequestStatus] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -69,7 +70,10 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
       const result = await res.json();
       if (result.status === 200) {
         setIsLoading(false);
-        setRequestStatus(true);
+        setRequestStatus("success");
+      } else {
+        setIsLoading(false);
+        setRequestStatus("error");
       }
       form.reset();
     } catch (error) {
@@ -92,7 +96,7 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
     );
   }
 
-  if (requestStatus) {
+  if (requestStatus === "success") {
     return (
       <div className="space-y-6 flex flex-col h-full justify-center items-center">
         <Image
@@ -109,6 +113,16 @@ export const RequestForm: React.FC<Props> = ({ productName, productModel }) => {
         <Link href="/catalog" className="flex items-center gap-2">
           <Button variant={"secondary"}>Перейти в каталог</Button>
         </Link>
+      </div>
+    );
+  }
+
+  if (requestStatus === "error") {
+    return (
+      <div className="space-y-6 flex flex-col h-full justify-center items-center">
+        <CircleX className="text-red-600 w-32 h-32" />
+        <h3 className="text-[40px] mb-4">Ошибка отправки сообщения</h3>
+        <Button onClick={() => setRequestStatus("")}>Попробовать снова</Button>
       </div>
     );
   }

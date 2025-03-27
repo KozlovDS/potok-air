@@ -17,6 +17,6 @@ app.prepare().then(() => {
 
   server.listen(port, host, (err) => {
     if (err) throw err;
-    console.log(`> Ready on http://${host}:${port}`);
+    console.log(`> Ready on https://${host}:${port}`);
   });
 });

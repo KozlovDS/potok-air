@@ -80,7 +80,7 @@ export const categories = [
         name: "Специальные",
       },
     ],
-  },
+  }, 
 ];
 
 export const products: Products[] = [

@@ -44,6 +44,12 @@ model ProductCharacteristics {
   productModel    ProductModels @relation(fields: [productModelId], references: [id])
 }
 
+model CharacteristicsList {
+  id          Int     @id @default(autoincrement())
+  name        String
+  order_number Int
+}
+
 model ProductDocuments {
   id        Int     @id @default(autoincrement())
   name      String

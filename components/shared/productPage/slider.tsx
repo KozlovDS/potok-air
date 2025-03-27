@@ -20,7 +20,7 @@ export const Slider: React.FC<Props> = ({ className, images }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
 
   return (
-    <div className={cn(className, "min-w-0")}>
+    <div className={cn(className, "min-w-0 select-none")}>
       <Swiper
         modules={[Thumbs]}
         thumbs={{ swiper: thumbsSwiper }}
@@ -36,9 +36,9 @@ export const Slider: React.FC<Props> = ({ className, images }) => {
               <Image
                 src={image.imageUrl}
                 alt={""}
-                width={700}
+                width={900}
                 height={400}
-                className="w-full h-auto"
+                className="w-auto h-auto max-h-[400px]"
                 priority
               />
             </SwiperSlide>
@@ -65,15 +65,15 @@ export const Slider: React.FC<Props> = ({ className, images }) => {
           images.map((image) => (
             <SwiperSlide
               key={image.id}
-              className="justify-center items-center bg-white rounded-2xl cursor-pointer p-2 mobile:p-4 hover:opacity-75"
+              className="justify-center items-center bg-white rounded-2xl cursor-pointer p-2 hover:opacity-75"
               style={{ height: "auto", display: "flex" }}
             >
               <Image
                 src={image.imageUrl}
                 alt={""}
                 width={145}
-                height={120}
-                className="w-full h-auto"
+                height={112}
+                className="w-auto h-auto max-h-28"
                 priority
               />
             </SwiperSlide>

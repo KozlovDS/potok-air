@@ -26,7 +26,7 @@ export const ProductDescription: React.FC<Props> = ({
           >
             <div className="relative w-full h-14">
               <Image
-                src={`/advantages/${specification.imageUrl}`}
+                src={`${specification.imageUrl}`}
                 alt={specification.name}
                 fill
                 sizes="100%"

@@ -69,7 +69,7 @@ export const HomeHeroSlider: React.FC<Props> = ({
                   alt={product.name}
                   className="w-full rounded-xl"
                   priority
-                  width={400}
+                  width={850}
                   height={300}
                 />
               </div>
